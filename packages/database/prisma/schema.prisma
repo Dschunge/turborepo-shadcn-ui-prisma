@@ -1,0 +1,343 @@
+datasource db {
+  provider     = "postgres"
+  url          = env("DATABASE_URL")
+  relationMode = "prisma"
+}
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["fullTextSearch", "fullTextIndex"]
+}
+
+//generator zod {
+//  provider         = "timeout 5s npx zod-prisma-types"
+//  output           = "./models"
+//  createInputTypes = false
+//}
+
+//generator zod {
+//  provider = "zod-prisma-types"
+//}
+
+model Hotel {
+  id                      String      @id @default(uuid())
+  userId                  String
+  name                    String      @db.Text
+  description             String
+  description_esp         String
+  image                   String
+  country                 String
+  state                   String
+  city                    String
+  locationDescription     String
+  locationDescription_esp String
+  phone                   String
+  gym                     Boolean     @default(false)
+  spa                     Boolean     @default(false)
+  bar                     Boolean     @default(false)
+  laundry                 Boolean     @default(false)
+  restaurant              Boolean     @default(false)
+  shopping                Boolean     @default(false)
+  freeParking             Boolean     @default(false)
+  bikeRental              Boolean     @default(false)
+  freeWifi                Boolean     @default(false)
+  movieNights             Boolean     @default(false)
+  swimmingPool            Boolean     @default(false)
+  coffeeShop              Boolean     @default(false)
+  createdAt               DateTime    @default(now())
+  updatedAt               DateTime    @default(now())
+  images                  String[]
+  lat                     Int
+  lng                     Int
+  phone_reservation       String
+  phone_tollfree          String
+  email                   String
+  website                 String      @default("")
+  facebook                String
+  tripadvisor             String
+  instagram               String
+  youtube                 String
+  whatsapp                String
+  rooms                   Room[]
+  bookings                Booking[]
+  activities              Activity[]
+  tours                   Tour[]
+  amenities               Amenities[]
+}
+
+model Room {
+  id             String    @id @default(uuid())
+  name           String
+  roomnumber     Int
+  description    String
+  bedCount       Int       @default(0)
+  guestCount     Int       @default(0)
+  bathroomCount  Int       @default(0)
+  kingBed        Int       @default(0)
+  queenBed       Int       @default(0)
+  image          String
+  breakFastPrice Int
+  roomPrice      Int
+  roomService    Boolean   @default(false)
+  TV             Boolean   @default(false)
+  balcony        Boolean   @default(false)
+  freeWifi       Boolean   @default(false)
+  cityView       Boolean   @default(false)
+  oceanView      Boolean   @default(false)
+  forestView     Boolean   @default(false)
+  mountainView   Boolean   @default(false)
+  airCondition   Boolean   @default(false)
+  soundProofed   Boolean   @default(false)
+  hotelId        String
+  Hotel          Hotel?    @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  images         String[]
+  Booking        Booking[]
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now())
+
+  @@index([hotelId])
+}
+
+enum AMENITIESTYPE {
+  HOTEL
+  ROOM
+}
+
+model Amenities {
+  id            String        @id @default(uuid())
+  name          String
+  description   String        @default("")
+  icon          String        @default("")
+  image         String        @default("")
+  amenitiestype AMENITIESTYPE
+  hotelId       String
+  Hotel         Hotel?        @relation(fields: [hotelId], references: [id], onDelete: Cascade)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @default(now())
+
+  @@index([hotelId])
+}
+
+model Booking {
+  id                String   @id @default(uuid())
+  userName          String
+  userEmail         String
+  userId            String
+  roomId            String
+  hotelId           String
+  hotelOwnerId      String
+  startDate         DateTime
+  endDate           DateTime
+  breakFastIncluded Boolean
+  currency          String
+  totalPrice        Int
+  paymentStatus     Boolean  @default(false)
+  paymentIntentId   String   @unique
+  bookedAt          DateTime @default(now())
+  Hotel             Hotel?   @relation(fields: [hotelId], references: [id])
+  Room              Room?    @relation(fields: [roomId], references: [id])
+
+  @@index([hotelId])
+  @@index([roomId])
+}
+
+model Activity {
+  id              String   @id @default(uuid())
+  name            String
+  name_esp        String
+  description     String
+  description_esp String
+  image           String
+  profileImage    String?
+  hotelId         String
+  type            String
+  start           DateTime @default(now())
+  end             DateTime @default(now())
+  price           Int
+  cashOnly        Boolean
+  freeOfCharge    Boolean
+  location        String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+  Hotel           Hotel?   @relation(fields: [hotelId], references: [id])
+
+  @@index([hotelId])
+}
+
+model Tour {
+  id              String   @id @default(uuid())
+  name            String
+  description     String
+  description_esp String
+  image           String
+  hotelId         String
+  date            DateTime @default(now())
+  price           Int
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now())
+  Hotel           Hotel?   @relation(fields: [hotelId], references: [id])
+
+  @@index([hotelId])
+}
+
+model Restaurant {
+  id               String          @id @default(uuid())
+  userId           String
+  name             String
+  description      String
+  descriptionshort String
+  image            String
+  address          String
+  stars            Int?            @default(0)
+  reviews          String?
+  category         String
+  opening1         String
+  opening2         String
+  phone            String
+  offertoday       Boolean         @default(false)
+  pdf_url          String
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @default(now())
+  dishes           Dish[]
+  reservations     Reservation[]
+  images           String[]
+  DigitalSinage    DigitalSinage[]
+  tables           Table[]
+}
+
+model Dish {
+  id              String      @id @default(uuid())
+  sku             Int         @unique
+  name            String
+  name_esp        String
+  description     String
+  description_esp String
+  price           Int
+  image           String
+  category        String
+  category_esp    String
+  restaurantId    String
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @default(now())
+  Restaurant      Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId])
+}
+
+model Reservation {
+  id            String      @id @default(uuid())
+  restaurantId  String
+  guests        Int
+  start         DateTime    @default(now())
+  end           DateTime    @default(now())
+  status        String
+  reason        String?
+  table         Int
+  contact_name  String
+  contact_phone String
+  contact_notes String?
+  team_notes    String?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @default(now())
+  Restaurant    Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId])
+}
+
+model Table {
+  id               String      @id @default(uuid())
+  restaurantId     String
+  tablenumber      Int
+  seatsMin         Int
+  seatsMax         Int
+  area             String
+  type             String
+  avialiableOnline Boolean
+  posX             Int
+  posY             Int
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @default(now())
+  Restaurant       Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+
+  @@index([restaurantId])
+}
+
+model DigitalSinage {
+  id           String     @id @default(uuid())
+  name         String
+  restaurantId String
+  title        String
+  subtitle     String
+  logo         String
+  backround    String
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @default(now())
+  Restaurant   Restaurant @relation(fields: [restaurantId], references: [id])
+
+  @@index([restaurantId])
+}
+
+//New for Auth and Payment
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  accounts      Account[]
+  sessions      Session[]
+
+  // customizations for AirBadge
+  customerId         String?
+  subscriptionId     String?
+  subscriptionStatus SubscriptionStatus?
+  plan               String?
+  priceId            String?
+}
+
+// customization for AirBadge
+enum SubscriptionStatus {
+  INCOMPLETE
+  INCOMPLETE_EXPIRED
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  UNPAID
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
